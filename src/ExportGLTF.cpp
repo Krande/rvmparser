@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -594,59 +595,63 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
 
   // ------- write glb header ------------------------------------------------
 
-  uint32_t total_size =
-    12 +                                  // Initial header
-    8 + jsonByteSize + jsonPaddingSize +  // JSON header, payload and padding
-    8 + ctx->dataBytes;                   // BVIN header and payload
-
-  uint32_t header[3] = {
-    0x46546C67,         // magic
-    2,                  // version
-    total_size          // total size
-  };
-  if (fwrite(header, sizeof(header), 1, out) != 1) {
-    logger(2, "%s: Error writing header", path);
-    fclose(out);
-    return false;
-  }
+  // uint32_t total_size =
+  //   12 +                                  // Initial header
+  //   8 + jsonByteSize + jsonPaddingSize +  // JSON header, payload and padding
+  //   8 + ctx->dataBytes;                   // BVIN header and payload
+  //
+  // uint32_t header[3] = {
+  //   0x46546C67,         // magic
+  //   2,                  // version
+  //   total_size          // total size
+  // };
+  // if (fwrite(header, sizeof(header), 1, out) != 1) {
+  //   logger(2, "%s: Error writing header", path);
+  //   fclose(out);
+  //   return false;
+  // }
 
   // ------- write JSON chunk ------------------------------------------------
-  uint32_t jsonhunkHeader[2] = {
-    jsonByteSize + jsonPaddingSize,       // length of chunk data
-    0x4E4F534A          // chunk type (JSON)
-  };
-  if (fwrite(jsonhunkHeader, sizeof(jsonhunkHeader), 1, out) != 1) {
-    logger(2, "%s: Error writing JSON chunk header", path);
-    fclose(out);
+  FILE* out2 = nullptr;
+  std::string fullPath = path;
+  fullPath.replace(fullPath.length()-4,fullPath.length(), ".json");
+  auto err2 = fopen_s(&out2, fullPath.c_str(), "wb");
+  if (err2 != 0) {
+    char buf[256];
+    if (strerror_s(buf, sizeof(buf), err2) != 0) {
+      buf[0] = '\0';
+    }
+    logger(2, "Failed to open %s for writing: %s", path, buf);
     return false;
   }
-
-  if (fwrite(buffer.GetString(), jsonByteSize, 1, out) != 1) {
+  assert(out2);
+  
+  if (fwrite(buffer.GetString(), jsonByteSize, 1, out2) != 1) {
     logger(2, "%s: Error writing JSON data", path);
-    fclose(out);
+    fclose(out2);
     return false;
   }
   if (jsonPaddingSize) {
     assert(jsonPaddingSize < 4);
     const char* padding = "   ";
-    if (fwrite(padding, jsonPaddingSize, 1, out) != 1) {
+    if (fwrite(padding, jsonPaddingSize, 1, out2) != 1) {
       logger(2, "%s: Error writing JSON padding", path);
-      fclose(out);
+      fclose(out2);
       return false;
     }
   }
 
   // -------- write BIN chunk ------------------------------------------------
-  uint32_t binChunkHeader[2] = {
-    ctx->dataBytes,  // length of chunk data
-    0x004E4942      // chunk type (BIN)
-  };
-
-  if (fwrite(binChunkHeader, sizeof(binChunkHeader), 1, out) != 1) {
-    logger(2, "%s: Error writing BIN chunk header", path);
-    fclose(out);
-    return false;
-  }
+  // uint32_t binChunkHeader[2] = {
+  //   ctx->dataBytes,  // length of chunk data
+  //   0x004E4942      // chunk type (BIN)
+  // };
+  //
+  // if (fwrite(binChunkHeader, sizeof(binChunkHeader), 1, out) != 1) {
+  //   logger(2, "%s: Error writing BIN chunk header", path);
+  //   fclose(out);
+  //   return false;
+  // }
     
   uint32_t offset = 0;
   for (DataItem* item = ctx->dataItems.first; item; item = item->next) {
@@ -662,7 +667,7 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   // ------- close file and exit ---------------------------------------------
   fclose(out);
 
-  ctx->logger(0, "exportGLTF: Successfully wrote %s (%zu KB)", path, (total_size + 1023) / 1024);
+  // ctx->logger(0, "exportGLTF: Successfully wrote %s (%zu KB)", path, (total_size + 1023) / 1024);
 
   return true;
 }
