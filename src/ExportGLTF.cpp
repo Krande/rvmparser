@@ -61,7 +61,7 @@ namespace {
   uint32_t addDataItem(Context* ctx, const void* ptr, size_t size, bool copy)
   {
     assert((size % 4) == 0);
-    assert(ctx->dataBytes + size <= std::numeric_limits<uint32_t>::max());
+    assert(ctx->dataBytes + uint32_t(size) <= std::numeric_limits<uint32_t>::max());
 
     if (copy) {
       void* copied_ptr = ctx->arena.alloc(size);
