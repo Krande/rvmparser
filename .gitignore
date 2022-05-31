@@ -20,6 +20,10 @@
 *.mod
 *.smod
 
+#model files
+*.bin
+*.json
+
 # Compiled Static libraries
 *.lai
 *.la
@@ -42,3 +46,4 @@ make/rvmparser
 
 # Other
 .idea
+*.log

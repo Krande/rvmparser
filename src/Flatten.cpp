@@ -97,9 +97,11 @@ void Flatten::buildPrunedCopyRecurse(Group* dstParent, Group* srcGroup, unsigned
 
   // Only groups can contain geometry, so we must make sure that we have at least one group even when none is selected.
   // Also, some subsequent stages require that we do not have geometry in the first level of groups.
-  if (srcGroup->group.id == -1 && level < 2) {
-    srcGroup->group.id = -2;
-  }
+  
+  // VR: had to comment out this.. else we ended up with all everytime
+  //if (srcGroup->group.id == -1 && level < 2) {
+  //  srcGroup->group.id = -2;
+  //}
 
   if (srcGroup->group.id != -1) {
     dstParent = dstStore->cloneGroup(dstParent, srcGroup);

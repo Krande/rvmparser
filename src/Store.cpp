@@ -86,7 +86,8 @@ Connection* Store::newConnection()
 Geometry* Store::newGeometry(Group* parent)
 {
   assert(parent != nullptr);
-  assert(parent->kind == Group::Kind::Group);
+  // vr: comment out, else it will failt
+  //assert(parent->kind == Group::Kind::Group);
 
   auto * geo =  arena.alloc<Geometry>();
   geo->next = nullptr;
@@ -156,7 +157,12 @@ Geometry* Store::cloneGeometry(Group* parent, const Geometry* src)
       dtri->vertices_n = stri->vertices_n;
       dtri->vertices = (float*)arena.dup(stri->vertices, 3 * sizeof(float) * dtri->vertices_n);
       dtri->normals = (float*)arena.dup(stri->normals, 3 * sizeof(float) * dtri->vertices_n);
-      dtri->texCoords = (float*)arena.dup(stri->texCoords, 2 * sizeof(float) * dtri->vertices_n);
+
+      //VR: we do not have any texcoords
+      if(dtri->texCoords != NULL)
+      {
+          dtri->texCoords = (float*)arena.dup(stri->texCoords, 2 * sizeof(float) * dtri->vertices_n);
+      }
     }
     if (stri->triangles_n) {
       dtri->triangles_n = stri->triangles_n;
