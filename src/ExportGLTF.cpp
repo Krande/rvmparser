@@ -612,19 +612,34 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   // }
 
   // ------- write JSON chunk ------------------------------------------------
-  FILE* out2 = nullptr;
+
+  
   std::string fullPath = path;
   fullPath.replace(fullPath.length()-4,fullPath.length(), ".json");
+  
+#ifdef _WIN32
+  FILE* out2 = nullptr;
   auto err2 = fopen_s(&out2, fullPath.c_str(), "wb");
   if (err2 != 0) {
-    char buf[256];
-    if (strerror_s(buf, sizeof(buf), err2) != 0) {
-      buf[0] = '\0';
-    }
-    logger(2, "Failed to open %s for writing: %s", path, buf);
-    return false;
+      char buf[256];
+      if (strerror_s(buf, sizeof(buf), err) != 0) {
+          buf[0] = '\0';
+      }
+      logger(2, "Failed to open %s for writing: %s", fullPath.c_str(), buf);
+      return false;
   }
   assert(out2);
+#else
+  FILE* out2 = fopen(fullPath.c_str(), "w");
+  if (out2 == nullptr) {
+      logger(2, "Failed to open %s for writing.", fullPath.c_str());
+      return false;
+  }
+#endif
+  
+  
+  
+
   
   if (fwrite(buffer.GetString(), jsonByteSize, 1, out2) != 1) {
     logger(2, "%s: Error writing JSON data", path);
@@ -640,7 +655,7 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
       return false;
     }
   }
-
+  fclose(out2);
   // -------- write BIN chunk ------------------------------------------------
   // uint32_t binChunkHeader[2] = {
   //   ctx->dataBytes,  // length of chunk data
