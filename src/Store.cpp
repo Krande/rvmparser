@@ -157,7 +157,6 @@ Geometry* Store::cloneGeometry(Group* parent, const Geometry* src)
       dtri->vertices_n = stri->vertices_n;
       dtri->vertices = (float*)arena.dup(stri->vertices, 3 * sizeof(float) * dtri->vertices_n);
       dtri->normals = (float*)arena.dup(stri->normals, 3 * sizeof(float) * dtri->vertices_n);
-
       //VR: we do not have any texcoords
       if(dtri->texCoords != NULL)
       {
