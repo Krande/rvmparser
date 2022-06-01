@@ -446,20 +446,20 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
 {
 
 #ifdef _WIN32
-  FILE* out = nullptr;
-  auto err = fopen_s(&out, path, "wb");
-  if (err != 0) {
+  FILE* outBinFile = nullptr;
+  auto errBinFile = fopen_s(&outBinFile, path, "wb");
+  if (errBinFile != 0) {
     char buf[256];
-    if (strerror_s(buf, sizeof(buf), err) != 0) {
+    if (strerror_s(buf, sizeof(buf), errBinFile) != 0) {
       buf[0] = '\0';
     }
     logger(2, "Failed to open %s for writing: %s", path, buf);
     return false;
   }
-  assert(out);
+  assert(outBinFile);
 #else
-  FILE* out = fopen(path, "w");
-  if (out == nullptr) {
+  FILE* errBinFile = fopen(path, "w");
+  if (errBinFile == nullptr) {
     logger(2, "Failed to open %s for writing.", path);
     return false;
   }
@@ -605,9 +605,9 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   //   2,                  // version
   //   total_size          // total size
   // };
-  // if (fwrite(header, sizeof(header), 1, out) != 1) {
+  // if (fwrite(header, sizeof(header), 1, outBinFile) != 1) {
   //   logger(2, "%s: Error writing header", path);
-  //   fclose(out);
+  //   fclose(outBinFile);
   //   return false;
   // }
 
@@ -618,20 +618,20 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   fullPath.replace(fullPath.length()-4,fullPath.length(), ".json");
   
 #ifdef _WIN32
-  FILE* out2 = nullptr;
-  auto err2 = fopen_s(&out2, fullPath.c_str(), "wb");
-  if (err2 != 0) {
+  FILE* outJsonFile = nullptr;
+  auto errJsonFile = fopen_s(&outJsonFile, fullPath.c_str(), "wb");
+  if (errJsonFile != 0) {
       char buf[256];
-      if (strerror_s(buf, sizeof(buf), err) != 0) {
+      if (strerror_s(buf, sizeof(buf), errBinFile) != 0) {
           buf[0] = '\0';
       }
       logger(2, "Failed to open %s for writing: %s", fullPath.c_str(), buf);
       return false;
   }
-  assert(out2);
+  assert(outJsonFile);
 #else
-  FILE* out2 = fopen(fullPath.c_str(), "w");
-  if (out2 == nullptr) {
+  FILE* outJsonFile = fopen(fullPath.c_str(), "w");
+  if (outJsonFile == nullptr) {
       logger(2, "Failed to open %s for writing.", fullPath.c_str());
       return false;
   }
@@ -641,38 +641,38 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   
 
   
-  if (fwrite(buffer.GetString(), jsonByteSize, 1, out2) != 1) {
+  if (fwrite(buffer.GetString(), jsonByteSize, 1, outJsonFile) != 1) {
     logger(2, "%s: Error writing JSON data", path);
-    fclose(out2);
+    fclose(outJsonFile);
     return false;
   }
   if (jsonPaddingSize) {
     assert(jsonPaddingSize < 4);
     const char* padding = "   ";
-    if (fwrite(padding, jsonPaddingSize, 1, out2) != 1) {
+    if (fwrite(padding, jsonPaddingSize, 1, outJsonFile) != 1) {
       logger(2, "%s: Error writing JSON padding", path);
-      fclose(out2);
+      fclose(outJsonFile);
       return false;
     }
   }
-  fclose(out2);
+  fclose(outJsonFile);
   // -------- write BIN chunk ------------------------------------------------
   // uint32_t binChunkHeader[2] = {
   //   ctx->dataBytes,  // length of chunk data
   //   0x004E4942      // chunk type (BIN)
   // };
   //
-  // if (fwrite(binChunkHeader, sizeof(binChunkHeader), 1, out) != 1) {
+  // if (fwrite(binChunkHeader, sizeof(binChunkHeader), 1, outBinFile) != 1) {
   //   logger(2, "%s: Error writing BIN chunk header", path);
-  //   fclose(out);
+  //   fclose(outBinFile);
   //   return false;
   // }
     
   uint32_t offset = 0;
   for (DataItem* item = ctx->dataItems.first; item; item = item->next) {
-    if (fwrite(item->ptr, item->size, 1, out) != 1) {
+    if (fwrite(item->ptr, item->size, 1, outBinFile) != 1) {
       logger(2, "%s: Error writing BIN chunk data at offset %u", path, offset);
-      fclose(out);
+      fclose(outBinFile);
       return false;
     }
     offset += item->size;
@@ -680,7 +680,7 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   assert(offset == ctx->dataBytes);
 
   // ------- close file and exit ---------------------------------------------
-  fclose(out);
+  fclose(outBinFile);
 
   // ctx->logger(0, "exportGLTF: Successfully wrote %s (%zu KB)", path, (total_size + 1023) / 1024);
 
