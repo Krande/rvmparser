@@ -458,8 +458,8 @@ bool exportGLTF(Store* store, Logger logger, const char* path, bool rotateZToY, 
   }
   assert(outBinFile);
 #else
-  FILE* errBinFile = fopen(path, "w");
-  if (errBinFile == nullptr) {
+  FILE* outBinFile = fopen(path, "w");
+  if (outBinFile == nullptr) {
     logger(2, "Failed to open %s for writing.", path);
     return false;
   }
