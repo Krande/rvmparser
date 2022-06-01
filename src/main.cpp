@@ -140,9 +140,9 @@ Options:
   --output-gltf-rotate-z-to-y=<bool>  Add an extra node below the root that adds a clockwise
                                       rotation of 90 degrees about the X axis such that the +Z axis
                                       will map to the +Y axis, which is the up-direction of GLTF-
-                                      files. Default value is true.
+                                      files. Default value is false.
   --tolerance=value                   Tessellation tolerance, given in world frame. Default value
-                                      is 0.1.
+                                      is 0.01.
   --cull-scale=value                  Cull objects smaller than cull-scale times tolerance. Set to
                                       a negative value to disable culling. Disabled by default.
 
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
   bool should_tessellate = false;
   bool should_colorize = false;
 
-  float tolerance = 0.1f;
+  float tolerance = 0.01f;
   float cullScale = -10000.1f;
 
   unsigned chunkTinyVertexThreshold = 0;
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   std::string output_txt;
   std::string output_gltf_path;
   std::string output_gltf;
-  bool output_gltf_rotate_z_to_y = true;
+  bool output_gltf_rotate_z_to_y = false;
   bool output_gltf_center = false;
   bool output_gltf_attributes = true;
 
