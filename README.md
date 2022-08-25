@@ -1,3 +1,7 @@
+
+# INFO modified to export json/binary files per site on RVM files..
+
+
 # rvmparser
 
 Code to work with AVEVA PDMS RVM files. Written completely from scratch, intended to be very fast, small, and with _little dependencies_, so it is trivial to include in existing projects.
