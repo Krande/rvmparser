@@ -339,7 +339,7 @@ int main(int argc, char** argv)
                 index += 0;
             }
         }
-        output_gltf = output_gltf_path + "model_" + temp.replace(0, 1, "") + ".bin";
+        output_gltf = output_gltf_path + "model_" + temp + ".bin";
 
 
         //add site to flatten and generate new store  
@@ -462,7 +462,7 @@ int main(int argc, char** argv)
     logger(0, "Files generated:");
     for (int i = 0; i < siteNames.size(); i++) {
         std::string temp = siteNames[i];
-        output_gltf = "model_" + temp.replace(0, 1, "") + ".bin";    
+        output_gltf = "model_" + temp + ".bin";    
         logger(3, output_gltf.c_str());
     }
  
