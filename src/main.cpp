@@ -297,6 +297,48 @@ int main(int argc, char** argv)
     
         //generate gltf filename
         std::string temp = siteNames[i];
+        {
+            size_t index = 0;
+            while (true) {
+                /* Locate the substring to replace. */
+                index = temp.find("*", index);
+                if (index == std::string::npos) break;
+
+                /* Make the replacement. */
+                temp.replace(index, 1, "");
+
+                /* Advance index forward so the next iteration doesn't pick it up as well. */
+                index += 0;
+            }
+        }
+        {
+            size_t index = 0;
+            while (true) {
+                /* Locate the substring to replace. */
+                index = temp.find("/", index);
+                if (index == std::string::npos) break;
+
+                /* Make the replacement. */
+                temp.replace(index, 1, "");
+
+                /* Advance index forward so the next iteration doesn't pick it up as well. */
+                index += 0;
+            }
+        }
+        {
+            size_t index = 0;
+            while (true) {
+                /* Locate the substring to replace. */
+                index = temp.find("\\", index);
+                if (index == std::string::npos) break;
+
+                /* Make the replacement. */
+                temp.replace(index, 1, "");
+
+                /* Advance index forward so the next iteration doesn't pick it up as well. */
+                index += 0;
+            }
+        }
         output_gltf = output_gltf_path + "model_" + temp.replace(0, 1, "") + ".bin";
 
 
