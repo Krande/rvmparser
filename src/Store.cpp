@@ -3,7 +3,7 @@
 #include <cstring>
 #include "Store.h"
 #include "StoreVisitor.h"
-
+#include <iostream>
 
 
 namespace {
@@ -133,6 +133,12 @@ Geometry* Store::cloneGeometry(Group* parent, const Geometry* src)
           dst_cont.vertices_n = src_cont.vertices_n;
           dst_cont.vertices = (float*)arena.dup(src_cont.vertices, 3 * sizeof(float)*dst_cont.vertices_n);
           dst_cont.normals = (float*)arena.dup(src_cont.normals, 3 * sizeof(float)*dst_cont.vertices_n);
+
+          // if vertices is NAN we set vertices_n to stop segment fault in tessalation
+          if (std::isnan(*dst_cont.vertices)) {
+              dst_cont.vertices_n = 0;
+          }
+         
         }
       }
       break;
@@ -269,7 +275,7 @@ void Store::apply(StoreVisitor* visitor, Group* group)
   assert(group->kind == Group::Kind::Group);
   visitor->beginGroup(group);
 
-  if (group->attributes.first) {
+   if (group->attributes.first) {
     visitor->beginAttributes(group);
     for (auto * a = group->attributes.first; a != nullptr; a = a->next) {
       visitor->attribute(a->key, a->val);
@@ -290,7 +296,7 @@ void Store::apply(StoreVisitor* visitor, Group* group)
   if (group->groups.first != nullptr) {
     visitor->beginChildren(group);
     for (auto * g = group->groups.first; g != nullptr; g = g->next) {
-      apply(visitor, g);
+            apply(visitor, g);
     }
     visitor->endChildren();
   }
@@ -310,8 +316,8 @@ void Store::apply(StoreVisitor* visitor)
         assert(model->kind == Group::Kind::Model);
         visitor->beginModel(model);
 
-        for (auto * group = model->groups.first; group != nullptr; group = group->next) {
-          apply(visitor, group);
+        for (auto * group = model->groups.first; group != nullptr; group = group->next) {        
+              apply(visitor, group);
         }
         visitor->endModel();
       }
