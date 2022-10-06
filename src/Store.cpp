@@ -4,7 +4,7 @@
 #include "Store.h"
 #include "StoreVisitor.h"
 #include <iostream>
-
+#include <cmath>
 
 namespace {
 
