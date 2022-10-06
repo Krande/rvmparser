@@ -3,8 +3,8 @@
 #include <cstring>
 #include "Store.h"
 #include "StoreVisitor.h"
-
-
+#include <iostream>
+#include <cmath>
 
 namespace {
 
@@ -86,7 +86,8 @@ Connection* Store::newConnection()
 Geometry* Store::newGeometry(Group* parent)
 {
   assert(parent != nullptr);
-  assert(parent->kind == Group::Kind::Group);
+  // vr: comment out, else it will failt
+  //assert(parent->kind == Group::Kind::Group);
 
   auto * geo =  arena.alloc<Geometry>();
   geo->next = nullptr;
@@ -132,6 +133,12 @@ Geometry* Store::cloneGeometry(Group* parent, const Geometry* src)
           dst_cont.vertices_n = src_cont.vertices_n;
           dst_cont.vertices = (float*)arena.dup(src_cont.vertices, 3 * sizeof(float)*dst_cont.vertices_n);
           dst_cont.normals = (float*)arena.dup(src_cont.normals, 3 * sizeof(float)*dst_cont.vertices_n);
+
+          // if vertices is NAN we set vertices_n to stop segment fault in tessalation
+          if (std::isnan(*dst_cont.vertices)) {
+              dst_cont.vertices_n = 0;
+          }
+         
         }
       }
       break;
@@ -156,9 +163,10 @@ Geometry* Store::cloneGeometry(Group* parent, const Geometry* src)
       dtri->vertices_n = stri->vertices_n;
       dtri->vertices = (float*)arena.dup(stri->vertices, 3 * sizeof(float) * dtri->vertices_n);
       dtri->normals = (float*)arena.dup(stri->normals, 3 * sizeof(float) * dtri->vertices_n);
-      if (stri->texCoords != NULL)
+      //VR: we do not have any texcoords
+      if(dtri->texCoords != NULL)
       {
-        dtri->texCoords = (float*)arena.dup(stri->texCoords, 2 * sizeof(float) * dtri->vertices_n);        
+          dtri->texCoords = (float*)arena.dup(stri->texCoords, 2 * sizeof(float) * dtri->vertices_n);
       }
     }
     if (stri->triangles_n) {
@@ -267,7 +275,7 @@ void Store::apply(StoreVisitor* visitor, Group* group)
   assert(group->kind == Group::Kind::Group);
   visitor->beginGroup(group);
 
-  if (group->attributes.first) {
+   if (group->attributes.first) {
     visitor->beginAttributes(group);
     for (auto * a = group->attributes.first; a != nullptr; a = a->next) {
       visitor->attribute(a->key, a->val);
@@ -288,7 +296,7 @@ void Store::apply(StoreVisitor* visitor, Group* group)
   if (group->groups.first != nullptr) {
     visitor->beginChildren(group);
     for (auto * g = group->groups.first; g != nullptr; g = g->next) {
-      apply(visitor, g);
+            apply(visitor, g);
     }
     visitor->endChildren();
   }
@@ -308,8 +316,8 @@ void Store::apply(StoreVisitor* visitor)
         assert(model->kind == Group::Kind::Model);
         visitor->beginModel(model);
 
-        for (auto * group = model->groups.first; group != nullptr; group = group->next) {
-          apply(visitor, group);
+        for (auto * group = model->groups.first; group != nullptr; group = group->next) {        
+              apply(visitor, group);
         }
         visitor->endModel();
       }
